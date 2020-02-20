@@ -133,5 +133,5 @@ class Client extends Discord.Client {
   }
 }
 
-const client = new Client()
+const client = new Client(require('./settings.js'))
 client.init()
