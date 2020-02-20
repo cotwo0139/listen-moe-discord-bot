@@ -1,0 +1,17 @@
+{
+  "name": "listen.moe",
+  "version": "0.0.1",
+  "description": "Listen.moe",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sangoon_Is_Noob#1683",
+  "license": "AGPL-3.0",
+  "dependencies": {
+    "chalk": "^3.0.0",
+    "discord.js": "^11.5.1",
+    "harusame": "^1.0.1",
+    "opusscript": "0.0.7"
+  }
+}

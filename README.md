@@ -1,2 +1,5 @@
-# listen-moe-discord-bot
-Listen.moe Discord Streaming BOT
+# Listen.moe Unofficial Discord Bot
+
+> You must install ffmpeg binary
+
+> Please rename settings.inc.js to settings.js
