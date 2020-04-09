@@ -82,15 +82,19 @@ class Client extends Discord.Client {
         else {
           if (!this.volumes[message.guild.id]) this.volumes[message.guild.id] = 10
           const vol = message.content.split('l!volume').pop().trim()
-          if (!vol) return message.channel.send(`💡  Current Volume: **${vol}%**`)
+          if (!vol) return message.channel.send(`💡  Current Volume: **${this.volumes[message.guild.id]}%**`)
           if (message.member.permissions.has('ADMINISTRATOR')) {
             if (Number.isNaN(Number(vol))) return message.channel.send('💡 Volume must be an integer')
-            else if (Number(vol) < 1) return message.channel.send('💡 The volume cannot be more than 150.')
+            if (Number(vol) < 1) return message.channel.send('💡 Volume cannot be set to less than 1.')
+            if (Number(vol) > 150) return message.channel.send('💡 You cannot set the volume to more than 150')
+            this.setVolume(message.guild.id, Number(vol))
+            return message.channel.send(`💡  Current Volume: **${this.volumes[message.guild.id]}%**`)
           }
         }
         break
       case 'l!stop':
         if (message.member.permissions.has('ADMINISTRATOR')) {
+          this.leaveVoice(message.guild.id)
           return message.channel.send('💡 Stopped Radio.')
         }
         break
@@ -134,12 +138,12 @@ class Client extends Discord.Client {
       dispatcher: voiceConnection.playArbitraryInput(streamURL)
     })
     this.dispatchers.set(guildID, dataObject)
-    this.setVolume(guildID, 10)
+    this.setVolume(guildID, this.volumes[guildID])
   }
 
   setVolume (guildID, volume) {
-    this.volumes[guildID] = volume
-    this.dispatchers.get(guildID).dispatcher.setVolumeLogarithmic(volume / 100)
+    if (!volume) this.volumes[guildID] = 10
+    if (this.dispatchers.get(guildID)) this.dispatchers.get(guildID).dispatcher.setVolumeLogarithmic(volume / 100)
   }
 
   joinVoice (voiceChannel) {
