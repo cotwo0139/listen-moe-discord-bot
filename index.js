@@ -105,6 +105,7 @@ class Client extends Discord.Client {
     if (this.dispatchers.get(guildID)) {
       this.dispatchers.get(guildID).voiceConnection.disconnect()
       this.dispatchers.get(guildID).dispatcher.end()
+      this.dispatchers.remove(guildID)
     }
   }
 
