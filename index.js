@@ -54,7 +54,9 @@ class Client extends Discord.Client {
 
   handleCommand (message) {
     if (message.channel.type === 'dm') return
-    switch (message.content) {
+    const args = message.content.split(/ +/)
+    const command = args.shift()
+    switch (command) {
       case 'l!jpop':
         this.leaveVoice(message.guild.id)
         this.joinVoice(message.member.voiceChannel).then((conn) => {
@@ -81,17 +83,14 @@ class Client extends Discord.Client {
         if (!this.dispatchers.get(message.guild.id)) return message.channel.send('💡  First, You must playing radio')
         else {
           if (!this.volumes[message.guild.id]) this.volumes[message.guild.id] = 10
-          const vol = message.content.split('l!volume').pop().trim()
-          if (!vol) return message.channel.send(`💡  Current Volume: **${this.volumes[message.guild.id]}%**`)
-          if (message.member.permissions.has('ADMINISTRATOR')) {
-            if (Number.isNaN(Number(vol))) return message.channel.send('💡 Volume must be an integer')
-            if (Number(vol) < 1) return message.channel.send('💡 Volume cannot be set to less than 1.')
-            if (Number(vol) > 150) return message.channel.send('💡 You cannot set the volume to more than 150')
-            this.setVolume(message.guild.id, Number(vol))
-            return message.channel.send(`💡  Current Volume: **${this.volumes[message.guild.id]}%**`)
-          }
+          const vol = args.shift()
+          if (!vol || !message.member.permissions.has('ADMINISTRATOR')) return message.channel.send(`💡  Current Volume: **${this.volumes[message.guild.id]}%**`)
+          if (Number.isNaN(Number(vol))) return message.channel.send('💡 Volume must be an integer')
+          if (Number(vol) < 1) return message.channel.send('💡 Volume cannot be set to less than 1.')
+          if (Number(vol) > 150) return message.channel.send('💡 You cannot set the volume to more than 150')
+          this.setVolume(message.guild.id, Number(vol))
+          return message.channel.send(`💡  Current Volume: **${this.volumes[message.guild.id]}%**`)
         }
-        break
       case 'l!stop':
         if (message.member.permissions.has('ADMINISTRATOR')) {
           this.leaveVoice(message.guild.id)
@@ -105,7 +104,7 @@ class Client extends Discord.Client {
     if (this.dispatchers.get(guildID)) {
       this.dispatchers.get(guildID).voiceConnection.disconnect()
       this.dispatchers.get(guildID).dispatcher.end()
-      this.dispatchers.remove(guildID)
+      this.dispatchers.delete(guildID)
     }
   }
 
@@ -144,7 +143,8 @@ class Client extends Discord.Client {
 
   setVolume (guildID, volume) {
     if (!volume) this.volumes[guildID] = 10
-    if (this.dispatchers.get(guildID)) this.dispatchers.get(guildID).dispatcher.setVolumeLogarithmic(volume / 100)
+    else this.volumes[guildID] = volume
+    if (this.dispatchers.get(guildID)) this.dispatchers.get(guildID).dispatcher.setVolumeLogarithmic(this.volumes[guildID] / 100)
   }
 
   joinVoice (voiceChannel) {
