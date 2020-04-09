@@ -1,3 +1,4 @@
 module.exports = {
-  token: 'SupersecretToken'
+  token: 'SupersecretToken',
+  owners: ['USER ID']
 }
