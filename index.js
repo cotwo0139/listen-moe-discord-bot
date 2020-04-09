@@ -24,6 +24,7 @@ class Client extends Discord.Client {
       KR: 'https://listen.moe/kpop/stream'
     }
     this.nowplayingMessages = new Discord.Collection()
+    this.volumes = {}
     this.harusame = new Harusame({ attempts: 3, interval: 5000 })
       .on('debug', (name, msg) => this.logger.debug(`[Listen.moe] Websocket Name: ${name}, Debug Message: ${msg}`))
       .on('error', (name, error) => console.error(`Websocket Name: ${name}`, error))
@@ -52,6 +53,7 @@ class Client extends Discord.Client {
   }
 
   handleCommand (message) {
+    if (message.channel.type === 'dm') return
     switch (message.content) {
       case 'l!jpop':
         this.leaveVoice(message.guild.id)
@@ -69,6 +71,28 @@ class Client extends Discord.Client {
         break
       case 'l!np':
         this.sendMessage(message.channel, this.buildEmbed(this.listenMoeData.get(this.nowplayingMessages.get(message.guild.id).streamURL)), this.nowplayingMessages.get(message.guild.id).streamURL)
+        break
+      case 'l!shutdown':
+        if (this._options.owners.includes(message.author.id)) {
+          message.channel.send('💡  Shutting Down...').then(process.exit(1))
+        }
+        break
+      case 'l!volume':
+        if (!this.dispatchers.get(message.guild.id)) return message.channel.send('💡  First, You must playing radio')
+        else {
+          if (!this.volumes[message.guild.id]) this.volumes[message.guild.id] = 10
+          const vol = message.content.split('l!volume').pop().trim()
+          if (!vol) return message.channel.send(`💡  Current Volume: **${vol}%**`)
+          if (message.member.permissions.has('ADMINISTRATOR')) {
+            if (Number.isNaN(Number(vol))) return message.channel.send('💡 Volume must be an integer')
+            else if (Number(vol) < 1) return message.channel.send('💡 The volume cannot be more than 150.')
+          }
+        }
+        break
+      case 'l!stop':
+        if (message.member.permissions.has('ADMINISTRATOR')) {
+          return message.channel.send('💡 Stopped Radio.')
+        }
         break
     }
   }
@@ -114,6 +138,7 @@ class Client extends Discord.Client {
   }
 
   setVolume (guildID, volume) {
+    this.volumes[guildID] = volume
     this.dispatchers.get(guildID).dispatcher.setVolumeLogarithmic(volume / 100)
   }
 
